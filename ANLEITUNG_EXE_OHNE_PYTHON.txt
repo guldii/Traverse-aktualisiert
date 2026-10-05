@@ -1,0 +1,42 @@
+EXE ERSTELLEN ÜBER GITHUB
+==========================
+
+Die fertige EXE kann auf Windows 10/11 offline verwendet werden.
+Python muss nur in der GitHub-Buildumgebung vorhanden sein – nicht auf den
+PCs, auf denen später die EXE ausgeführt wird.
+
+1. Repository
+-------------
+Lade den gesamten Inhalt dieses Ordners in dein GitHub-Repository hoch.
+Achte besonders darauf, dass diese Datei vorhanden ist:
+
+.github/workflows/build-windows.yml
+
+2. Build starten
+----------------
+Nach dem Upload auf den Branch „main“ startet der Workflow automatisch.
+
+Alternativ:
+- Repository auf GitHub öffnen
+- „Actions“ öffnen
+- „Windows EXE erstellen“ auswählen
+- „Run workflow“ anklicken, falls verfügbar
+
+3. EXE herunterladen
+--------------------
+Nach einem erfolgreichen Lauf:
+- den grünen Build-Lauf öffnen
+- unten bei „Artifacts“ den Eintrag
+  „TraverseLochabstand-Windows-x64“ herunterladen
+- ZIP-Datei entpacken
+- TraverseLochabstand.exe starten
+
+4. Neue Version bauen
+---------------------
+Wenn du den Python-Code später änderst, lade die neue Datei hoch.
+GitHub erstellt danach wieder eine neue EXE.
+
+Wichtig
+-------
+Die EXE ist für Windows 10/11 64-bit gedacht.
+Die fertige EXE benötigt kein Python und keine Internetverbindung.
