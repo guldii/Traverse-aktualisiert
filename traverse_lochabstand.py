@@ -36,7 +36,7 @@ class Result:
 
     @property
     def fastening_holes(self) -> int:
-        """Die beiden äußersten Löcher sind die Befestigungslöcher."""
+        """Die beiden äussersten Löcher sind die Befestigungslöcher."""
         return 2
 
     @property
@@ -272,7 +272,7 @@ class App(tk.Tk):
             "",
             f"Nutzbare Strecke:               {fmt(r.usable)} mm",
             f"Lochabstände:                   {r.intervals}",
-            f"2x Befestigungslöcher:           2",
+            f"Befestigungslöcher:           2",
             f"Anzahl Löcher (ohne Befestigungslöcher): {r.holes_without_fastening}",
             f"Tatsächlicher Abstand:           {fmt(r.spacing)} mm",
             f"Abweichung zum Soll:             {fmt(r.deviation)} mm",
@@ -286,7 +286,7 @@ class App(tk.Tk):
         self.card_values["length"].configure(text=f"{fmt(r.length)} mm")
         self.card_values["holes"].configure(text=f"{r.holes_without_fastening}")
         self.card_values["spacing"].configure(text=f"{fmt(r.spacing)} mm")
-        self.fastening_note.configure(text="2 Befestigungslöcher • rot markiert")
+        self.fastening_note.configure(text="2 Befestigungslöcher")
 
         self.draw()
 
@@ -302,7 +302,7 @@ class App(tk.Tk):
 
         for value in self.card_values.values():
             value.configure(text="—")
-        self.fastening_note.configure(text="2 Befestigungslöcher • rot markiert")
+        self.fastening_note.configure(text="2 Befestigungslöcher")
 
         self.canvas.delete("all")
         self.canvas.create_text(
