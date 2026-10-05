@@ -50,11 +50,11 @@ def calculate(length: float, start: float, end: float, target: float) -> Result:
     if not all(math.isfinite(v) for v in vals):
         raise ValueError("Bitte nur gültige Zahlen eingeben.")
     if length <= 0:
-        raise ValueError("Die Traversenlänge muss größer als 0 sein.")
+        raise ValueError("Die Traversenlänge muss grösser als 0 sein.")
     if start < 0 or end < 0:
         raise ValueError("Anfangs- und Endabstand dürfen nicht negativ sein.")
     if target <= 0:
-        raise ValueError("Der Soll-Lochabstand muss größer als 0 sein.")
+        raise ValueError("Der Soll-Lochabstand muss grösser als 0 sein.")
     usable = length - start - end
     if usable <= 0:
         raise ValueError("Anfangs- und Endabstand müssen zusammen kleiner als die Traversenlänge sein.")
@@ -64,7 +64,7 @@ def calculate(length: float, start: float, end: float, target: float) -> Result:
     upper = max(1, math.ceil(ratio))
     candidates = sorted(set((lower, upper)))
 
-    # Kleinste Abweichung vom Sollwert; bei Gleichstand größerer Ist-Abstand.
+    # Kleinste Abweichung vom Sollwert; bei Gleichstand grösserer Ist-Abstand.
     scored = [(abs((usable / n) - target), -(usable / n), n) for n in candidates]
     deviation, _neg_spacing, intervals = min(scored)
     spacing = usable / intervals
@@ -197,7 +197,7 @@ class App(tk.Tk):
         self.card_values = {}
         for i, (key, label) in enumerate([
             ("length", "TRAVERSE"),
-            ("holes", "ANZ. LÖCHER"),
+            ("holes", "ANZAHL BEFESTIGUNGSLÖCHER"),
             ("spacing", "ABSTAND"),
         ]):
             cards.columnconfigure(i, weight=1)
@@ -211,21 +211,13 @@ class App(tk.Tk):
             value.pack(anchor="w", padx=12, pady=(0, 10))
             self.card_values[key] = value
 
-        self.fastening_note = tk.Label(
-            overview, text="2 Befestigungslöcher (rot)", bg=CARD, fg=RED_DARK,
-            font=("Segoe UI", 9, "bold")
-        )
-        self.fastening_note.pack(anchor="w", pady=(8, 0))
-
         drawbox = ttk.Frame(right, style="Card.TFrame", padding=10)
         drawbox.pack(fill="both", expand=True)
 
         title_row = ttk.Frame(drawbox, style="Card.TFrame")
         title_row.pack(fill="x", padx=5, pady=(2, 6))
-        ttk.Label(title_row, text="Technische Übersicht",
+        ttk.Label(title_row, text="Technische Zeichnung",
                   style="Section.TLabel").pack(side="left")
-        tk.Label(title_row, text="● Befestigung  ● Standardloch",
-                 bg=CARD, fg=TEXT, font=("Segoe UI", 9)).pack(side="right")
 
         self.canvas = tk.Canvas(
             drawbox, background="white", highlightthickness=1,
@@ -235,7 +227,7 @@ class App(tk.Tk):
         self.canvas.bind("<Configure>", lambda _e: self.draw())
         self.canvas.create_text(
             20, 25, anchor="nw",
-            text="Nach der Berechnung wird hier die Traverse mit Lochpositionen angezeigt.",
+            text="Nach der Berechnung wird hier die technische Zeichnung der Traverse angezeigt.",
             fill=MUTED, font=("Segoe UI", 10)
         )
 
@@ -265,29 +257,24 @@ class App(tk.Tk):
 
         r = self.result
         lines = [
-            f"Traversenlänge:                 {fmt(r.length)} mm",
-            f"Anfangsabstand:                 {fmt(r.start)} mm",
-            f"Endabstand:                     {fmt(r.end)} mm",
-            f"Soll-Lochabstand:               {fmt(r.target)} mm",
-            "",
-            f"Nutzbare Strecke:               {fmt(r.usable)} mm",
-            f"Lochabstände:                   {r.intervals}",
-            f"Befestigungslöcher:           2",
-            f"Anzahl Löcher (ohne Befestigungslöcher): {r.holes_without_fastening}",
-            f"Tatsächlicher Abstand:           {fmt(r.spacing)} mm",
-            f"Abweichung zum Soll:             {fmt(r.deviation)} mm",
-            f"Auswahl: {r.rounding}",
+            ("Nutzbare Strecke", f"{fmt(r.usable)} mm"),
+            ("Lochabstände", f"{r.intervals}"),
+            ("Befestigungslöcher", "2"),
+            ("Löcher ohne Befestigung", f"{r.holes_without_fastening}"),
+            ("Tatsächlicher Abstand", f"{fmt(r.spacing)} mm"),
+            ("Abweichung zum Soll", f"{fmt(r.deviation)} mm"),
+            ("Auswahl", r.rounding),
         ]
         self.result_text.configure(state="normal")
         self.result_text.delete("1.0", "end")
-        self.result_text.insert("1.0", "\n".join(lines))
+        for label, value in lines:
+            self.result_text.insert("end", f"{label:<26}")
+            self.result_text.insert("end", f"{value:>18}\n")
         self.result_text.configure(state="disabled")
 
         self.card_values["length"].configure(text=f"{fmt(r.length)} mm")
         self.card_values["holes"].configure(text=f"{r.holes_without_fastening}")
         self.card_values["spacing"].configure(text=f"{fmt(r.spacing)} mm")
-        self.fastening_note.configure(text="2 Befestigungslöcher")
-
         self.draw()
 
     def reset(self):
@@ -302,12 +289,10 @@ class App(tk.Tk):
 
         for value in self.card_values.values():
             value.configure(text="—")
-        self.fastening_note.configure(text="2 Befestigungslöcher")
-
         self.canvas.delete("all")
         self.canvas.create_text(
             20, 25, anchor="nw",
-            text="Nach der Berechnung wird hier die Traverse mit Lochpositionen angezeigt.",
+            text="Nach der Berechnung wird hier die technische Zeichnung der Traverse angezeigt.",
             fill=MUTED, font=("Segoe UI", 10)
         )
 
@@ -330,98 +315,101 @@ class App(tk.Tk):
         if not r:
             c.create_text(
                 w / 2, h / 2, anchor="center",
-                text="Noch keine Berechnung\n\nGib links die Maße ein und klicke auf „Berechnen“.",
+                text="Noch keine Berechnung\n\nGib links die Masse ein und klicke auf „Berechnen“.",
                 fill=MUTED, font=("Segoe UI", 11), justify="center"
             )
             return
 
-        margin_x = 55
-        usable_w = max(120, w - 2 * margin_x)
-        bar_y = int(h * 0.44)
-        bar_h = max(30, min(52, int(h * 0.09)))
+        margin_x = 70
+        usable_w = max(160, w - 2 * margin_x)
+        bar_y = int(h * 0.43)
+        bar_h = max(34, min(58, int(h * 0.095)))
         x0, x1 = margin_x, w - margin_x
         scale = usable_w / r.length
 
-        # Deutlich hervorgehobene technische Kerndaten
-        c.create_text(
-            w / 2, 25,
-            text=f"TRAVERSE  {fmt(r.length)} mm",
-            font=("Segoe UI", 13, "bold"), fill=NAVY
-        )
-        c.create_text(
-            w / 2, 49,
-            text=f"ANZ. LÖCHER (ohne Befestigung): {r.holes_without_fastening}    •    ABSTAND: {fmt(r.spacing)} mm",
-            font=("Segoe UI", 11, "bold"), fill=BLUE_DARK
-        )
+        # Technischer Zeichnungskopf
+        c.create_text(w / 2, 22, text="U-STAHLTRAVERSE",
+                      font=("Segoe UI", 12, "bold"), fill=NAVY)
+        c.create_text(w / 2, 45,
+                      text=f"L = {fmt(r.length)} mm    |    n = {r.intervals}    |    a = {fmt(r.spacing)} mm",
+                      font=("Consolas", 10, "bold"), fill=TEXT)
 
-        # Traverse
-        c.create_rectangle(
-            x0, bar_y, x1, bar_y + bar_h,
-            outline="#71808D", fill=TRAVERSE_FILL, width=2
-        )
+        # Traverse als technische Seitenansicht mit Mittellinie
+        c.create_rectangle(x0, bar_y, x1, bar_y + bar_h,
+                           outline="#43515D", fill="#EEF2F5", width=2)
+        c.create_line(x0, bar_y + bar_h / 2, x1, bar_y + bar_h / 2,
+                      fill="#9AA6B2", dash=(4, 4))
 
-        # Alle Löcher; die beiden äußersten sind Befestigungslöcher.
-        radius = max(3, min(7, 0.42 * scale * r.spacing if r.intervals else 4))
-        radius = min(radius, max(3, bar_h / 3))
+        # Lochpositionen mit technischen Mittelpunktskreuzen
+        radius = max(4, min(8, 0.38 * scale * r.spacing if r.intervals else 4))
+        radius = min(radius, max(4, bar_h / 3))
         center_y = bar_y + bar_h / 2
-
         for i in range(r.holes):
             pos = r.start + i * r.spacing
             x = x0 + pos * scale
             is_fastening = i == 0 or i == r.holes - 1
             fill = RED if is_fastening else BLUE
             outline = RED_DARK if is_fastening else BLUE_DARK
-            c.create_oval(
-                x-radius, center_y-radius, x+radius, center_y+radius,
-                fill=fill, outline=outline, width=1
-            )
+            c.create_oval(x-radius, center_y-radius, x+radius, center_y+radius,
+                          fill=fill, outline=outline, width=2)
+            arm = radius + 5
+            c.create_line(x-arm, center_y, x+arm, center_y, fill=outline, width=1)
+            c.create_line(x, center_y-arm, x, center_y+arm, fill=outline, width=1)
 
-        # Bemaßung
-        dim_y = bar_y + bar_h + 58
-        self._dimension(x0, x1, dim_y, f"L = {fmt(r.length)} mm")
+        # Hilfslinien und Bemassung nach technischer Zeichnungslogik
         start_x = x0 + r.start * scale
         end_x = x0 + (r.length - r.end) * scale
-        self._dimension(x0, start_x, bar_y - 38, f"{fmt(r.start)} mm", compact=True)
-        self._dimension(end_x, x1, bar_y - 38, f"{fmt(r.end)} mm", compact=True)
+        second_x = x0 + (r.start + r.spacing) * scale
+        dim_top = bar_y - 86
+        dim_mid = bar_y - 48
+        dim_bottom = bar_y + bar_h + 62
 
-        if r.intervals == 1:
-            self._dimension(start_x, end_x, bar_y - 75, f"{fmt(r.spacing)} mm")
-        else:
-            second_x = x0 + (r.start + r.spacing) * scale
-            self._dimension(start_x, second_x, bar_y - 75, f"{fmt(r.spacing)} mm", compact=True)
+        self._extension(x0, bar_y - 2, dim_top)
+        self._extension(start_x, bar_y - 2, dim_top)
+        self._extension(second_x, bar_y - 2, dim_top)
+        self._extension(end_x, bar_y - 2, dim_top)
+        self._extension(x1, bar_y - 2, dim_top)
 
-        c.create_text(
-            w / 2, min(h - 22, dim_y + 32),
-            text=f"{r.intervals} gleichmäßige Lochabstände",
-            fill=TEXT, font=("Segoe UI", 9, "bold")
-        )
+        self._dimension(start_x, second_x, dim_top, f"a = {fmt(r.spacing)} mm", compact=True)
+        self._dimension(x0, start_x, dim_mid, f"{fmt(r.start)} mm", compact=True)
+        self._dimension(end_x, x1, dim_mid, f"{fmt(r.end)} mm", compact=True)
+        self._dimension(x0, x1, dim_bottom, f"L = {fmt(r.length)} mm")
 
-        c.create_text(
-            x0, bar_y + bar_h + 9, anchor="nw",
-            text="Linke Stirnseite", fill=MUTED, font=("Segoe UI", 8)
-        )
-        c.create_text(
-            x1, bar_y + bar_h + 9, anchor="ne",
-            text="Rechte Stirnseite", fill=MUTED, font=("Segoe UI", 8)
-        )
+        # Nutzbare Lochstrecke als zweite technische Masslinie
+        c.create_line(start_x, dim_bottom - 18, start_x, dim_bottom + 5, fill="#697783")
+        c.create_line(end_x, dim_bottom - 18, end_x, dim_bottom + 5, fill="#697783")
+        self._dimension(start_x, end_x, dim_bottom + 34, f"L1 = {fmt(r.usable)} mm", compact=True)
+
+        # Technische Beschriftungen, ohne Legende
+        c.create_text(x0, bar_y + bar_h + 10, anchor="nw",
+                      text="0", fill=MUTED, font=("Consolas", 8))
+        c.create_text(x1, bar_y + bar_h + 10, anchor="ne",
+                      text=f"{fmt(r.length)}", fill=MUTED, font=("Consolas", 8))
+        c.create_text(w - 12, h - 12, anchor="se",
+                      text="SCHEMATISCH • NICHT MASSSTAEBLICH",
+                      fill=MUTED, font=("Consolas", 8, "bold"))
+
+    def _extension(self, x, y1, y2):
+        c = self.canvas
+        c.create_line(x, y1, x, y2, fill="#697783", width=1)
 
     def _dimension(self, x1, x2, y, label, compact=False):
         c = self.canvas
         if x2 < x1:
             x1, x2 = x2, x1
-        c.create_line(x1, y, x2, y, fill="#52616D", width=1)
-        c.create_line(x1, y-5, x1, y+5, fill="#52616D")
-        c.create_line(x2, y-5, x2, y+5, fill="#52616D")
-        if x2 - x1 > 22:
-            c.create_line(x1, y, x1+5, y-3, fill="#52616D")
-            c.create_line(x1, y, x1+5, y+3, fill="#52616D")
-            c.create_line(x2, y, x2-5, y-3, fill="#52616D")
-            c.create_line(x2, y, x2-5, y+3, fill="#52616D")
-        c.create_text(
-            (x1+x2)/2, y-7 if compact else y-9,
-            text=label, fill=TEXT,
-            font=("Segoe UI", 8, "bold"), anchor="s"
-        )
+        line = "#52616D"
+        c.create_line(x1, y, x2, y, fill=line, width=1)
+        c.create_line(x1, y-5, x1, y+5, fill=line, width=1)
+        c.create_line(x2, y-5, x2, y+5, fill=line, width=1)
+        if x2 - x1 > 18:
+            # offene technische Pfeilspitzen
+            c.create_line(x1, y, x1+6, y-3, fill=line)
+            c.create_line(x1, y, x1+6, y+3, fill=line)
+            c.create_line(x2, y, x2-6, y-3, fill=line)
+            c.create_line(x2, y, x2-6, y+3, fill=line)
+        c.create_text((x1+x2)/2, y-7 if compact else y-9,
+                      text=label, fill=TEXT,
+                      font=("Consolas", 8, "bold"), anchor="s")
 
     def save_png(self):
         if not self.result:
@@ -456,13 +444,8 @@ class App(tk.Tk):
             d.text((55, 30), APP_TITLE, fill=NAVY, font=titlefont)
             d.text(
                 (55, 78),
-                f"Traverse: {fmt(r.length)} mm     Anz. Löcher: {r.holes_without_fastening}     Abstand: {fmt(r.spacing)} mm",
+                f"L = {fmt(r.length)} mm     n = {r.intervals}     a = {fmt(r.spacing)} mm",
                 fill=BLUE_DARK, font=bigfont
-            )
-            d.text(
-                (55, 115),
-                "2 Befestigungslöcher (rot)  •  übrige Löcher (blau)",
-                fill=RED_DARK, font=small
             )
 
             x0, x1 = 90, 1410
@@ -470,8 +453,9 @@ class App(tk.Tk):
             scale = (x1-x0) / r.length
             d.rectangle(
                 (x0, y0, x1, y1),
-                outline="#71808D", fill=TRAVERSE_FILL, width=3
+                outline="#43515D", fill=TRAVERSE_FILL, width=3
             )
+            d.line((x0, (y0+y1)//2, x1, (y0+y1)//2), fill="#9AA6B2", width=1)
 
             radius = max(4, min(10, int(0.42 * scale * r.spacing)))
             cy = (y0 + y1) // 2
@@ -489,32 +473,41 @@ class App(tk.Tk):
                 d.line((a, y, b, y), fill="#52616D", width=2)
                 d.line((a, y-8, a, y+8), fill="#52616D", width=2)
                 d.line((b, y-8, b, y+8), fill="#52616D", width=2)
+                if b-a > 24:
+                    d.line((a, y, a+10, y-5), fill="#52616D", width=2)
+                    d.line((a, y, a+10, y+5), fill="#52616D", width=2)
+                    d.line((b, y, b-10, y-5), fill="#52616D", width=2)
+                    d.line((b, y, b-10, y+5), fill="#52616D", width=2)
                 bbox = d.textbbox((0, 0), label, font=f)
                 tw = bbox[2] - bbox[0]
                 th = bbox[3] - bbox[1]
                 d.rectangle(
-                    ((a+b-tw)//2-6, y-th-12, (a+b+tw)//2+6, y-4),
+                    ((a+b-tw)//2-8, y-th-14, (a+b+tw)//2+8, y-4),
                     fill="white"
                 )
-                d.text(((a+b-tw)//2, y-th-11), label, fill=TEXT, font=f)
+                d.text(((a+b-tw)//2, y-th-12), label, fill=TEXT, font=f)
 
             first = x0 + r.start * scale
             last = x0 + (r.length-r.end) * scale
-            dim(x0, x1, 445, f"Gesamtlänge: {fmt(r.length)} mm")
-            dim(x0, first, 210, f"Anfang: {fmt(r.start)} mm")
-            dim(last, x1, 210, f"Ende: {fmt(r.end)} mm")
             second = x0 + (r.start + r.spacing) * scale
-            dim(first, second, 165, f"Lochabstand: {fmt(r.spacing)} mm")
+            # technische Hilfslinien
+            for xx in (x0, first, second, last, x1):
+                d.line((xx, y0-20, xx, y0-85), fill="#697783", width=1)
+                d.line((xx, y1+10, xx, y1+65), fill="#697783", width=1)
+            dim(first, second, 165, f"a = {fmt(r.spacing)} mm")
+            dim(x0, first, 215, f"{fmt(r.start)} mm")
+            dim(last, x1, 215, f"{fmt(r.end)} mm")
+            dim(x0, x1, 445, f"L = {fmt(r.length)} mm")
+            dim(first, last, 495, f"L1 = {fmt(r.usable)} mm")
 
             d.text(
-                (90, 510),
-                f"{r.intervals} Lochabstände   |   2 Befestigungslöcher   |   "
-                f"{r.holes_without_fastening} Löcher ohne Befestigung   |   Soll: {fmt(r.target)} mm",
+                (90, 545),
+                f"n = {r.intervals}   |   2 Befestigungslöcher   |   {r.holes_without_fastening} weitere Löcher",
                 fill=TEXT, font=font
             )
             d.text(
-                (90, 555),
-                "Schematische technische Übersicht – nicht maßstabsgetreue Fertigungszeichnung",
+                (90, 580),
+                "TECHNISCHE SCHEMATISCHE DARSTELLUNG  •  NICHT MASSSTAEBLICH",
                 fill=MUTED, font=small
             )
 
