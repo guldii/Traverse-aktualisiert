@@ -1,0 +1,35 @@
+name: Windows EXE erstellen
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Quellcode auschecken
+        uses: actions/checkout@v4
+
+      - name: Python in der Build-Umgebung einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build-Werkzeuge installieren
+        run: python -m pip install --upgrade pip pyinstaller pillow
+
+      - name: Tests ausführen
+        run: python -m unittest -v test_traverse_lochabstand.py
+
+      - name: Windows-EXE erstellen
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --name TraverseLochabstand --collect-all PIL traverse_lochabstand.py
+
+      - name: EXE als Download bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: TraverseLochabstand-Windows-x64
+          path: dist/TraverseLochabstand.exe
+          if-no-files-found: error
+          retention-days: 30
